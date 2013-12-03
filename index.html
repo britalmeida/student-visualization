@@ -151,20 +151,15 @@ d3.json("grades.json", function(data) {
   d3.select("body").append("p").text("Min & Max: " + d3.extent(data.students, function(d) {return d.grade}));
   d3.select("body").append("p").text("Median: " + d3.median(data.students, function(d) {return d.grade}));
 
-  /* Setting up scales and bins */
+  /* Grouping Data */
+  var gradesHash = d3.nest()
+    .key(function(d) { return d.grade; })
+    .entries(data.students);
+
+  /* Setting up scales */
   x.domain([data.minGrade-0.5, data.maxGrade+0.5])
    .rangeRound([0,width]);
-
-  var barWidth = x(1)-x(0);
-
-  var values = d3.layout.histogram()
-      .range([data.minGrade-0.5, data.maxGrade+0.5])
-      .bins(data.maxGrade+1)
-      .value(function(d) { return d.grade; })
-      (data.students);
-  values.forEach(sortBinElements);
-
-  y.domain([0, d3.max(values, function(d) { return d.y; })])
+  y.domain([0, d3.max(gradesHash, function(d) { return d.values.length; })])
 
 
   /* min Grade Rectangle */
@@ -174,41 +169,7 @@ d3.json("grades.json", function(data) {
         .attr("width", x(data.minRequiredGrade))
         .attr("height", height);
 
-
-  /* bars */
-  var bar = svg.selectAll(".bar")
-      .data(values)
-    .enter().append("g")
-      .attr("class", function(d) {
-        for(var i in d) {
-          if(!(i in {'x':1, 'dx':1, 'y':1}))
-            if(d[i].istID == data.selfIstID){
-              return "bar you";
-            }
-        }
-        return "bar";})
-      .attr("transform", function(d) { return "translate(" + x(d.x+0.5) + "," + y(d.y) + ")"; })
-      .on('mouseover', tip.show)
-      .on('mouseout', tip.hide);
-
-  bar.append("rect")
-      .attr("x", 1- barWidth/2)
-      .attr("width", barWidth -2)
-      .attr("height", function(d) { return height - y(d.y); });
-
-  /* number with count inside bars */
-  bar.append("text")
-      .attr("dy", ".75em")
-      .attr("y", 6)
-      .attr("x", 0)
-      .attr("text-anchor", "middle")
-      .text(function(d) { if(d.y!=0) {return d.y;} });
-
-  /* sticks inside bars */
-  var gradesHash = d3.nest()
-    .key(function(d) { return d3.round(d.grade,1); })
-    .entries(data.students);
-
+  /* sticks */
   var stick = svg.selectAll(".stick")
       .data(gradesHash)
     .enter().append("g")
