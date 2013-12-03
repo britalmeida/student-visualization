@@ -92,10 +92,12 @@ body {
 <script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.min.js"></script>
 <script>
 
-var margin = {top: 20, right: 20, bottom: 30, left: 40},
-    width = 960 - margin.left - margin.right,
+var margin = {top: 20, right: 20, bottom: 30, left: 40}, xgap = 100,
+    width1 = 760 - margin.left - xgap/2,
+    width2 = 300 - xgap/2 - margin.right,
     height = 350 - margin.top - margin.bottom;
 
+/* First set of Axes */
 var x = d3.scale.linear();
 
 var xAxis = d3.svg.axis()
@@ -110,7 +112,15 @@ var yAxis = d3.svg.axis()
     .scale(y)
     .orient("left")
 
+/* Second set of Axes */
+var x2 = d3.scale.linear();
 
+var xAxis2 = d3.svg.axis()
+    .scale(x2)
+    .ticks(10)
+    .orient("bottom");
+
+/* Tip */
 var tip = d3.tip()
   .attr('class', 'd3-tip')
   .offset([-10, 0])
@@ -129,15 +139,20 @@ function sortBinElements(element, index, array) {
       return 1;
     if (a.grade < b.grade)
       return -1;
+    // equal grades, solve by istID
+    if (a.istID > b.istID)
+      return 1;
+    if (a.istID < b.istID)
+      return -1;
     return 0;
   });
 }
 
 
-var svg = d3.select("body").append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
-  .append("g")
+var frame = d3.select("body").append("svg")
+    .attr("width", width1 + width2 + xgap + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom);
+var svg = frame.append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 svg.call(tip);
@@ -153,7 +168,7 @@ d3.json("grades.json", function(data) {
 
   /* Setting up scales and bins */
   x.domain([data.minGrade-0.5, data.maxGrade+0.5])
-   .rangeRound([0,width]);
+   .rangeRound([0,width1]);
 
   var barWidth = x(1)-x(0);
 
@@ -223,9 +238,9 @@ d3.json("grades.json", function(data) {
 
   /* min Grade */
   svg.append("g")
+      .attr("class", "line")
       .attr("transform", function(d) { return "translate(" + x(data.minRequiredGrade) + ", 0)"; })
       .append("line")
-        .attr("class", "line")
         .attr("x1", 0)
         .attr("x2", 0)
         .attr("y1", 0)
@@ -238,7 +253,7 @@ d3.json("grades.json", function(data) {
       .call(xAxis)
     .append("text")
       .attr("class", "label")
-      .attr("x", width)
+      .attr("x", width1)
       .attr("y", 30)
       .style("text-anchor", "end")
       .text("Grade");
@@ -261,7 +276,7 @@ d3.json("grades.json", function(data) {
       .attr("transform", "translate(0,20)");
 
   var l1 = legend.append("g")
-      .attr("transform", "translate("+(width-18)+",0)");
+      .attr("transform", "translate("+(width1-18)+",0)");
   l1.append("rect")
         .attr("width", 18)
         .attr("height", 18)
@@ -274,7 +289,7 @@ d3.json("grades.json", function(data) {
         .text("Você está aqui");
 
   var l2 = legend.append("g")
-      .attr("transform", "translate("+(width-18)+",20)");
+      .attr("transform", "translate("+(width1-18)+",20)");
   l2.append("line")
       .attr("x2", 18)
       .attr("y1", 9)
@@ -286,6 +301,20 @@ d3.json("grades.json", function(data) {
       .attr("dy", ".35em")
       .style("text-anchor", "end")
       .text("Nota mínima");
+
+
+  /** Side Chart **/
+  var sideChart = frame.append("g").attr("transform", "translate("+(margin.left+width1+xgap)+","+margin.top+")");
+
+  /* Setting up scales */
+  x2.domain([data.minGrade-0.5, data.maxGrade+0.5])
+   .rangeRound([0,width2]);
+
+  /* x Axis */
+  sideChart.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis2)
 });
 
 function type(d) {
