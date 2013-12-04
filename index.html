@@ -189,7 +189,6 @@ d3.json("grades.json", function(data) {
         .attr("width", x(data.minRequiredGrade))
         .attr("height", height);
 
-
   /* bars */
   var bar = svg.selectAll(".bar")
       .data(values)
@@ -203,6 +202,10 @@ d3.json("grades.json", function(data) {
         }
         return "bar";})
       .attr("transform", function(d) { return "translate(" + x(d.x+0.5) + "," + y(d.y) + ")"; })
+      .on('click', function (d) {
+        x2.domain([d.x, d.x+1]);
+        //focus.select("path").attr("d", area);
+        sideChart.select(".x.axis").call(xAxis2);})
       .on('mouseover', tip.show)
       .on('mouseout', tip.hide);
 
@@ -318,7 +321,6 @@ d3.json("grades.json", function(data) {
 });
 
 function type(d) {
-  console.log(d);
   d.students.grade = +d.students.grade;
   return d;
 }
