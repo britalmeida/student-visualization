@@ -14,27 +14,11 @@ body {
 }
 
 .you {
-  fill: purple !important;
-}
-
-.bar {
-  fill: steelblue;
-}
-
-.bar:hover {
-  fill: brown !important;
-}
-
-.bar rect {
-  shape-rendering: crispEdges;
-}
-
-.bar text {
-  fill: #fff;
+  stroke: purple;
 }
 
 .stick {
-  stroke: peachpuff;
+  stroke: peru;
   stroke-width:1;
 }
 
@@ -153,7 +137,7 @@ d3.json("grades.json", function(data) {
 
   /* Grouping Data */
   var gradesHash = d3.nest()
-    .key(function(d) { return d.grade; })
+    .key(function(d) { return d3.round(d.grade,1); })
     .entries(data.students);
 
   /* Setting up scales */
