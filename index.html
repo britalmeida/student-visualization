@@ -183,7 +183,9 @@ d3.json("grades.json", function(data) {
 
 
   /* min Grade Rectangle */
-  svg.append("rect")
+  svg.append("g")
+     .attr("render-order", -1) //isto nao funciona
+     .append("rect")
         .attr("class", "minRect")
         .attr("x", 0)
         .attr("width", x(data.minRequiredGrade))
@@ -202,11 +204,14 @@ d3.json("grades.json", function(data) {
         }
         return "bar";})
       .attr("transform", function(d) { return "translate(" + x(d.x+0.5) + "," + y(d.y) + ")"; })
-      .on('click', function (d) {
+      .on('mouseover', function (d) {
+        tip.show(d);
         x2.domain([d.x, d.x+1]);
-        //focus.select("path").attr("d", area);
-        sideChart.select(".x.axis").call(xAxis2);})
-      .on('mouseover', tip.show)
+        sideChart.select(".x.axis").call(xAxis2);
+        sideChart.selectAll(".bar").select("rect")
+          .attr("y",  y(d.y) )
+          .attr("height", height-y(d.y) );
+      })
       .on('mouseout', tip.hide);
 
   bar.append("rect")
@@ -312,12 +317,33 @@ d3.json("grades.json", function(data) {
   /* Setting up scales */
   x2.domain([data.minGrade-0.5, data.maxGrade+0.5])
    .rangeRound([0,width2]);
+  var barWidth2 = x2(1)-x2(0);
 
   /* x Axis */
   sideChart.append("g")
       .attr("class", "x axis")
       .attr("transform", "translate(0," + height + ")")
       .call(xAxis2)
+
+  /* bars */
+  var bar2 = sideChart.selectAll(".bar")
+      .data(values)
+    .enter().append("g")
+      .attr("class", function(d) {
+        for(var i in d) {
+          if(!(i in {'x':1, 'dx':1, 'y':1}))
+            if(d[i].istID == data.selfIstID){
+              return "bar you";
+            }
+        }
+        return "bar";})
+      .attr("transform", function(d) { return "translate(" + x2(d.x+0.5) + ",0)"; })
+
+  bar2.append("rect")
+      .attr("x", 1- barWidth2/2)
+      .attr("y", function(d) { return y(d.y); })
+      .attr("width", barWidth2 -2)
+      .attr("height", function(d) { return height - y(d.y); });
 });
 
 function type(d) {
