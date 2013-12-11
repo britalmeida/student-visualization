@@ -158,7 +158,7 @@ var svg = frame.append("g")
 svg.call(tip);
 
 
-d3.json("grades.json", function(data) {
+d3.json("grades_cg.json", function(data) {
 
   /* Generic Statistics */
   d3.select("body").append("h3").text("Statistic stuff");
@@ -208,7 +208,7 @@ d3.json("grades.json", function(data) {
         tip.show(d);
         x2.domain([d.x, d.x+1]);
         sideChart.select(".x.axis").call(xAxis2);
-        updateSideChart(sideValues(d));
+        updateSideChart(sideValues.range([d.x, d.x+1])(d));
       })
       .on('mouseout', tip.hide);
 
@@ -326,7 +326,6 @@ d3.json("grades.json", function(data) {
   /* bars */
   function updateSideChart(sideValues) {
 
-    console.log(sideValues);
     // DATA JOIN - Join new data with old elements, if any.
     var sbar = sideChart.selectAll(".bar")
         .data(sideValues);
